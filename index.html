@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>The Karate Parrot — Comprehension Quiz (Royal Scroll)</title>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+<style>
+:root{
+  --parchment:#fff6e6;
+  --ink:#2a230f;
+  --gold-1:#d89d2b;
+  --gold-2:#f2bf55;
+  --muted:#6d6a5a;
+  --card-shadow: 0 18px 44px rgba(30,20,6,0.12);
+  --pill:#fff9f0;
+  --font-sans: system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:
+  radial-gradient(circle at 10% 8%, rgba(255,236,190,0.6), transparent 12%),
+  linear-gradient(180deg,#fff8ed,#f7ecd6 40%,#efe0c8 100%);
+  font-family:var(--font-sans); color:var(--ink); -webkit-font-smoothing:antialiased;}
+.scene{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;position:relative;overflow:hidden}
+
+/* wrapper */
+.wrap{width:95%;max-width:980px;margin:0 auto}
+
+/* header */
+.header{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.logo{width:84px;height:84px;border-radius:12px;background:linear-gradient(180deg,#fff7ea,#fff1d9);display:flex;align-items:center;justify-content:center;border:3px solid rgba(0,0,0,0.03);box-shadow:var(--card-shadow)}
+.header h1{margin:0;font-size:22px;line-height:1.05}
+.header p{margin:0;color:var(--muted);font-size:13px}
+
+/* parchment card */
+.card{background:linear-gradient(180deg, rgba(255,250,240,1), rgba(255,246,230,0.98));border-radius:14px;padding:18px;border:1px solid rgba(0,0,0,0.04);box-shadow:var(--card-shadow)}
+.form-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+label{display:block;font-weight:700;font-size:13px;margin-bottom:6px;color:var(--ink)}
+input[type="text"], select{padding:10px 12px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);background:var(--pill);font-size:15px;min-width:140px}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* buttons */
+.btn{
+  background:linear-gradient(90deg,var(--gold-2),var(--gold-1));
+  border-radius:10px;padding:10px 16px;border:2px solid rgba(0,0,0,0.06);
+  font-weight:800;color:#2b1700;cursor:pointer;box-shadow:0 10px 28px rgba(168,111,30,0.10)
+}
+.btn.secondary{background:#fff;border:1px solid rgba(0,0,0,0.04);color:var(--ink)}
+.btn:active{transform:translateY(1px)}
+
+/* quiz */
+#quiz-container{display:none;margin-top:16px}
+#quiz{margin-top:12px}
+.q-card{
+  margin-bottom:12px;padding:14px;border-radius:10px;background:linear-gradient(180deg,#fffaf4,#fff7ea);
+  border:1px solid rgba(0,0,0,0.03);box-shadow:0 8px 26px rgba(28,20,10,0.06);
+  opacity:0; transform:translateY(8px); animation:fadein .42s ease forwards;
+}
+@keyframes fadein{to{opacity:1;transform:none}}
+
+.q-top{display:flex;gap:12px;align-items:center}
+.q-num{background:linear-gradient(180deg,#fff,#f8efe0);padding:8px 10px;border-radius:8px;font-weight:900;color:var(--gold-1);min-width:46px;text-align:center;box-shadow:0 6px 18px rgba(182,109,26,0.08)}
+.q-text{font-weight:800;color:#2b2b2b}
+
+.opts{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.opt{
+  padding:10px 14px;border-radius:999px;background:linear-gradient(180deg,#fffaf6,#fff6ed);
+  cursor:pointer;border:1px solid rgba(0,0,0,0.04);font-weight:800;min-width:120px;text-align:center;transition:transform .12s, box-shadow .12s;
+}
+.opt:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,0.06)}
+.opt.selected{background:linear-gradient(90deg,#fff3d6,#fffbe8);border-color:rgba(246,166,35,0.35);box-shadow:0 10px 26px rgba(245,166,35,0.06)}
+.opt.correct{background:linear-gradient(90deg,#e6fff2,#f0fff8);border-color:rgba(46,167,102,0.12);color:#0b7b4c}
+.opt.wrong{background:linear-gradient(90deg,#fff1f1,#fff6f6);border-color:rgba(224,87,78,0.12);color:#a33}
+
+/* true/false style */
+.tf .opt{min-width:150px;padding:12px 18px}
+
+/* nav */
+.quiz-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
+.progress{flex:1;margin-right:10px;background:#f9f1dd;border-radius:999px;height:12px;overflow:hidden}
+.progress > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--gold-2),var(--gold-1));transition:width .6s}
+
+/* results */
+#results-container{display:none;margin-top:18px}
+.results-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.score{font-size:20px;font-weight:900;color:var(--gold-1);margin-top:10px}
+.badge{display:inline-block;padding:12px 16px;border-radius:12px;background:linear-gradient(180deg,#fffdf6,#fff7ea);box-shadow:0 12px 34px rgba(184,120,52,0.08);text-align:center}
+.badge .emoji{font-size:36px}
+.badge .title{font-weight:900;margin-top:6px}
+
+/* responsive */
+@media (max-width:720px){
+  .q-text{font-size:15px}
+  .opt{min-width:unset;flex:1 1 calc(50% - 12px)}
+  .text-input{min-width:unset;width:100%}
+}
+small.note{display:block;margin-top:6px;color:var(--muted)}
+</style>
+</head>
+<body>
+  <div class="scene">
+    <div class="wrap">
+      <div class="header">
+        <div class="logo card" aria-hidden="true">
+          <svg width="58" height="58" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="8" width="56" height="44" rx="6" fill="#fff7ea" stroke="#e6d2b3" stroke-width="1.5"/>
+            <path d="M14 18c6-3 26-6 36 0" stroke="#c98b3a" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <circle cx="46" cy="22" r="5" fill="#ffd98b"/>
+          </svg>
+        </div>
+        <div>
+          <h1>🦜 The Karate Parrot — Comprehension Quiz</h1>
+          <p>Test your understanding of the story about Sameer, Sarah, and their very skilled pet.</p>
+        </div>
+      </div>
+
+      <section id="student-info-container" class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <h2 style="margin:0">⚜️ Adventurer’s Log</h2>
+            <div class="hint">Before you begin your quest, tell us who you are. Follow the instructions below carefully — students unfamiliar with online quizzes will find this simple.</div>
+            <ol style="margin:8px 0 0 18px">
+              <li><strong>Fill your name, roll, class and section.</strong></li>
+              <li><strong>Each question:</strong> click one option (MCQ). You may change answers until you click <em>Submit Answers</em>.</li>
+              <li><strong>No typed answers:</strong> this quiz uses only clickable choices to make it easy.</li>
+              <li>At the end you can <strong>Download Result</strong> — a PDF report card shows which ones were right/wrong and a short explanation.</li>
+            </ol>
+          </div>
+          <div style="text-align:right;color:var(--muted)">Quiz length: <strong>19</strong> questions</div>
+        </div>
+
+        <form id="student-info-form" style="margin-top:14px">
+          <div class="form-row">
+            <div>
+              <label for="name">🧭 Full Name</label>
+              <input id="name" type="text" required placeholder="e.g. Ali Khan">
+            </div>
+
+            <div>
+              <label for="roll">🎫 Roll Number</label>
+              <input id="roll" type="text" required placeholder="e.g. 12">
+            </div>
+
+            <div>
+              <label for="class">🏰 Class</label>
+              <select id="class" required>
+                <option value="">Select</option>
+                <option value="Grade 4">Grade 4</option>
+                <option value="Grade 5">Grade 5</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="section">🏹 Section</label>
+              <input id="section" type="text" required placeholder="e.g. A">
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:12px">
+            <button type="button" class="btn secondary" onclick="previewTheme()">Preview Theme</button>
+            <button type="submit" class="btn" id="begin-btn">Begin Quest — Open the Scroll 🏁</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="quiz-container">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div>
+              <h2 style="margin:0">📜 Quest: The Karate Parrot</h2>
+              <div class="hint">Click the best option for each question. You can change answers until you press <strong>Submit Answers</strong>.</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="text-align:right">
+                <div id="live-q" style="font-weight:900">Question 1 / 19</div>
+                <div class="hint">Progress</div>
+              </div>
+              <div style="width:180px">
+                <div class="progress"><i id="progress-bar"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="quiz"></div>
+
+          <div class="quiz-actions">
+            <div style="display:flex;gap:8px">
+              <button class="btn secondary" id="prev-btn" onclick="prevQuestion()" disabled>← Previous</button>
+              <button class="btn secondary" id="next-btn" onclick="nextQuestion()">Next →</button>
+            </div>
+
+            <div style="display:flex;gap:10px;align-items:center">
+              <div class="hint">When ready</div>
+              <button id="submit-btn" class="btn" onclick="submitQuiz()">Submit Answers 🎯</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="results-container">
+        <div class="card">
+          <div class="results-head">
+            <div>
+              <h2 style="margin:0">🎉 Quest Complete!</h2>
+              <div class="hint">Brave adventurer — here is your result.</div>
+            </div>
+            <div style="text-align:right">
+              <div id="name-display" style="font-weight:900"></div>
+              <div id="meta-display" class="hint"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:18px;justify-content:space-between;flex-wrap:wrap;margin-top:12px">
+            <div style="flex:1;min-width:220px">
+              <div id="score-text" class="score">Score: 0 / 19</div>
+              <div class="hint">Your Rank</div>
+              <div style="height:12px;background:#f4e7d2;border-radius:999px;overflow:hidden;margin-top:8px">
+                <div id="rank-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--gold-2),var(--gold-1));transition:width .8s"></div>
+              </div>
+              <small class="note">Ranks: King (90–100), Queen (80–89), Knight (60–79), Squire (40–59), Peasant (&lt;40)</small>
+            </div>
+
+            <div style="min-width:180px;text-align:center">
+              <div class="badge" id="badge">
+                <div class="emoji">🧭</div>
+                <div class="title">Story Seeker</div>
+                <div class="hint" id="badge-sub">Keep exploring!</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px;text-align:center">
+            <div style="margin-top:10px;display:flex;gap:10px;justify-content:center">
+              <button class="btn" onclick="restartQuiz()">Try Again ↺</button>
+              <button class="btn secondary" onclick="downloadResults()">Download Result (PDF)</button>
+            </div>
+          </div>
+
+          <div id="answers-review" style="margin-top:16px;text-align:left"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+/* ---------- QUIZ DATA (THE KARATE PARROT) ---------- */
+const quizData = [
+  // 1. Comprehension
+  { type: "mcq", question: "1a. How do we know the three friends often met at the café?", options: ["A. They worked at the café", "B. They always sat at their usual seats", "C. They lived next to the café", "D. They owned the café"], correct: 1, explain: "The text mentions they 'always sat at their usual seats,' suggesting they were regular visitors." },
+  { type: "mcq", question: "1b. Who showed an interest in Sameer’s foot?", options: ["A. Sarah", "B. Adil", "C. The waiter", "D. The shop assistant"], correct: 1, explain: "Adil asked Sameer about his foot, showing interest." },
+  { type: "mcq", question: "1c. What was the main reason Sarah wanted to keep a pet?", options: ["A. She wanted someone to play with", "B. She felt lonely when Sameer was away", "C. She loved buying expensive animals", "D. She wanted to impress her neighbours"], correct: 1, explain: "She wanted a pet to keep her company when Sameer was traveling." },
+  { type: "mcq", question: "1d. Where did Sarah go to buy a pet?", options: ["A. A shop inside the mall", "B. A shop next to the Milk Depot", "C. A shop near the bank", "D. A shop on Regent Street"], correct: 1, explain: "Sameer mentions she 'ended up in the strange little pet shop' which was next to the Milk Depot." },
+  { type: "mcq", question: "1e. How did the assistant show the parrot’s skill?", options: ["A. He let it dance", "B. He made it sing", "C. He told it to break a chair", "D. He asked it to fly in circles"], correct: 2, explain: "The assistant had the parrot break a chair to demonstrate its karate skill." },
+  { type: "mcq", question: "1f. How did Sarah test the parrot’s ability at home?", options: ["A. She made it talk", "B. She let it break boxes and old things", "C. She trained it to fly", "D. She taught it new tricks"], correct: 1, explain: "She allowed it to practice on old boxes and broken things." },
+  { type: "mcq", question: "1g. How did the parrot come to attack Sameer?", options: ["A. Sameer scared it", "B. Sarah ordered it to attack", "C. Sameer shouted “Parrot! Karate? My foot!”", "D. The parrot was hungry"], correct: 2, explain: "The parrot attacked after Sameer said the trigger phrase, 'Parrot! Karate? My foot!'" },
+  { type: "mcq", question: "1h. How did Sameer finally avoid conflicts with the parrot?", options: ["A. He locked it in a room", "B. He gave it food", "C. He said “KARATE” loudly and moved strangely", "D. He ignored the parrot completely"], correct: 2, explain: "He had to say 'KARATE' and move strangely to make the parrot salute and stop the conflict." },
+
+  // 2. Explain Expressions
+  { type: "mcq", question: "2a. Explain the expression: “I was staggered”", options: ["A. I was sleepy", "B. I was shocked", "C. I was laughing", "D. I was confused"], correct: 1, explain: "To be 'staggered' means to be deeply shocked or astonished." },
+  { type: "mcq", question: "2b. Explain the expression: “Proudly declared”", options: ["A. Whispered shyly", "B. Said something in anger", "C. Said something with pride", "D. Asked a question politely"], correct: 2, explain: "To 'proudly declare' means to state something loudly and with great self-satisfaction or pride." },
+  { type: "mcq", question: "2c. Explain the expression: “Karate parrot”", options: ["A. A parrot that sings", "B. A parrot that knows karate tricks", "C. A parrot that can talk", "D. A parrot that is very colorful"], correct: 1, explain: "This term describes the parrot's unique skill of performing karate tricks." },
+  { type: "mcq", question: "2d. Explain the expression: “Too incredible”", options: ["A. Too boring", "B. Too confusing", "C. Hard to believe", "D. Easy to understand"], correct: 2, explain: "'Incredible' means hard to believe, so 'too incredible' means it was beyond belief." },
+  { type: "mcq", question: "2e. Explain the expression: “Lost for words”", options: ["A. Didn’t know what to say", "B. Forgot a story", "C. Spoke very fast", "D. Was shouting loudly"], correct: 0, explain: "To be 'lost for words' means to be so surprised or overwhelmed that you are unable to speak." },
+  { type: "mcq", question: "2f. Explain the expression: “Service counter”", options: ["A. A place to sit", "B. A place where customers pay or get help", "C. A shelf for books", "D. A part of a cage"], correct: 1, explain: "A 'service counter' is a desk where customers can pay or receive assistance." },
+
+  // 3. Reference to Context
+  { type: "mcq", question: "3a-i. 'I found out later that she ended up in the strange little pet shop.' — Who said this, and to whom?", options: ["A. Sameer to Adil and Babar", "B. Sarah to Sameer", "C. The assistant to Sarah", "D. Babar to Adil"], correct: 0, explain: "Sameer is the narrator and is telling the story to his friends Adil and Babar at the café." },
+  { type: "mcq", question: "3a-ii. 'I found out later that she ended up in the strange little pet shop.' — What had the speaker been doing earlier?", options: ["A. Cleaning the house", "B. Shopping for clothes", "C. Going to the bank for errands", "D. Visiting the pet shop"], correct: 2, explain: "Sameer mentions he 'was on my way to the bank for some errands' when Sarah went shopping." },
+  { type: "mcq", question: "3a-iii. 'I found out later that she ended up in the strange little pet shop.' — Why did “she” go to the pet shop?", options: ["A. To buy food", "B. To find a pet", "C. To meet a friend", "D. To sell old boxes"], correct: 1, explain: "Sarah went shopping to find a pet to keep her company." },
+  { type: "mcq", question: "3b-i. 'He stood there looking very pleased with himself.' — Who was looking pleased with himself?", options: ["A. Sameer", "B. Babar", "C. The shop assistant", "D. The parrot"], correct: 2, explain: "The shop assistant was pleased after showing off the unique parrot." },
+  { type: "mcq", question: "3b-ii. 'He stood there looking very pleased with himself.' — Why was he pleased?", options: ["A. He had shown the parrot’s karate skill", "B. He sold all the pets", "C. He learned a new trick", "D. He won a prize"], correct: 0, explain: "He was pleased because the dramatic display of the parrot's karate skill had impressed Sarah." }
+];
+
+/* ---------- STATE ---------- */
+let student = {};
+// Quiz data length is 19
+let answers = new Array(quizData.length).fill(null);
+let currentIndex = 0;
+
+/* ---------- UI refs ---------- */
+const studentForm = document.getElementById('student-info-form');
+const quizContainer = document.getElementById('quiz-container');
+const quizDiv = document.getElementById('quiz');
+const resultsContainer = document.getElementById('results-container');
+const liveQ = document.getElementById('live-q');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+
+studentForm.addEventListener('submit', (e)=>{
+  e.preventDefault();
+  student.name = document.getElementById('name').value.trim();
+  student.roll = document.getElementById('roll').value.trim();
+  student.class = document.getElementById('class').value;
+  student.section = document.getElementById('section').value.trim();
+  if(!student.name || !student.roll || !student.class || !student.section){
+    alert('Please fill all fields.');
+    return;
+  }
+  startQuiz();
+});
+
+/* preview */
+function previewTheme(){ alert('Royal scroll theme: warm gold parchment, big buttons, and friendly confetti (if you win).'); }
+
+/* ---------- RENDER ---------- */
+function startQuiz(){
+  document.getElementById('student-info-container').style.display='none';
+  quizContainer.style.display='block';
+  renderAllQuestions();
+  showQuestion(0);
+  updateProgress();
+  playSound('start');
+}
+
+function renderAllQuestions(){
+  quizDiv.innerHTML='';
+  quizData.forEach((q,i)=>{
+    const card = document.createElement('div'); card.className='q-card'; card.dataset.index=i;
+    card.style.animationDelay = (i*20)+'ms';
+    const top = document.createElement('div'); top.className='q-top';
+    const num = document.createElement('div'); num.className='q-num'; num.textContent = i+1;
+    const qtext = document.createElement('div'); qtext.className='q-text'; qtext.innerHTML = q.question;
+    top.appendChild(num); top.appendChild(qtext); card.appendChild(top);
+
+    const opts = document.createElement('div'); opts.className='opts';
+    // All questions are MCQs in this quiz data
+    if(q.type === 'mcq' || q.type === 'fill'){
+      q.options.forEach((opt,idx)=>{
+        const b = document.createElement('div'); b.className='opt'; b.textContent = opt; b.dataset.opt=idx;
+        b.addEventListener('click', ()=> { selectOption(i, idx, b); playSound('click'); });
+        opts.appendChild(b);
+      });
+    } else if(q.type === 'truefalse'){
+      ['true','false'].forEach(v=>{
+        const b = document.createElement('div'); b.className='opt'; b.textContent = (v==='true'?'✅ True':'❌ False'); b.dataset.tf=v;
+        b.addEventListener('click', ()=> { selectTF(i, v, b); playSound('click'); });
+        opts.appendChild(b);
+      });
+    }
+    card.appendChild(opts);
+    quizDiv.appendChild(card);
+  });
+}
+
+/* selection logic */
+function selectOption(qIndex, optIndex, elem){
+  answers[qIndex] = optIndex;
+  const qCard = document.querySelector(`.q-card[data-index="${qIndex}"]`);
+  qCard.querySelectorAll('.opt').forEach(o=> o.classList.remove('selected'));
+  elem.classList.add('selected');
+  markSelected(qIndex);
+}
+function selectTF(qIndex, val, elem){
+  answers[qIndex] = (val === 'true');
+  const qCard = document.querySelector(`.q-card[data-index="${qIndex}"]`);
+  qCard.querySelectorAll('.opt').forEach(o=> o.classList.remove('selected'));
+  elem.classList.add('selected');
+  markSelected(qIndex);
+}
+function markSelected(i){
+  const qCard = document.querySelector(`.q-card[data-index="${i}"]`);
+  if(!qCard) return;
+  qCard.style.borderColor = answers[i] !== null ? 'rgba(240,140,40,0.14)' : 'rgba(0,0,0,0.03)';
+}
+
+/* nav */
+function showQuestion(i){
+  currentIndex = i;
+  const all = document.querySelectorAll('.q-card');
+  all.forEach((c,idx)=> c.style.display = (idx === i) ? 'block' : 'none');
+  liveQ.textContent = `Question ${i+1} / ${quizData.length}`;
+  prevBtn.disabled = (i === 0);
+  nextBtn.disabled = (i === quizData.length - 1);
+  updateProgress();
+}
+function prevQuestion(){ if(currentIndex>0) showQuestion(currentIndex-1); }
+function nextQuestion(){ if(currentIndex<quizData.length-1) showQuestion(currentIndex+1); }
+function updateProgress(){
+  const answered = answers.reduce((s,a)=> s + (a !== null ? 1:0), 0);
+  const percent = Math.round((answered / quizData.length)*100);
+  document.getElementById('progress-bar').style.width = percent + '%';
+}
+
+/* ---------- SOUND (WebAudio) ---------- */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx) audioCtx = new AudioCtx();
+}
+function playSound(kind){
+  try{
+    ensureAudio();
+    if(kind === 'click'){
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = 880;
+      g.gain.value = 0.0001;
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start();
+      const now = audioCtx.currentTime;
+      g.gain.exponentialRampToValueAtTime(0.12, now + 0.005);
+      o.frequency.exponentialRampToValueAtTime(1100, now + 0.06);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+      o.stop(now + 0.18);
+    } else if(kind === 'start'){
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'triangle'; o.frequency.value = 330;
+      o.connect(g); g.connect(audioCtx.destination);
+      g.gain.value = 0.0001; o.start();
+      const now = audioCtx.currentTime;
+      g.gain.exponentialRampToValueAtTime(0.08, now + 0.02);
+      o.frequency.exponentialRampToValueAtTime(440, now + 0.15);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+      o.stop(now + 0.38);
+    } else if(kind === 'fanfare'){
+      const now = audioCtx.currentTime;
+      const freqs = [440, 550, 660];
+      freqs.forEach((f, idx)=>{
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = 'sine';
+        o.frequency.value = f;
+        o.connect(g); g.connect(audioCtx.destination);
+        g.gain.value = 0.0001;
+        o.start(now + idx*0.12);
+        g.gain.exponentialRampToValueAtTime(0.10, now + idx*0.12 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + idx*0.12 + 0.32);
+        o.stop(now + idx*0.12 + 0.34);
+      });
+    }
+  }catch(e){ /* audio may be blocked until user gesture — ignore silently */ }
+}
+
+/* ---------- SUBMIT & SCORING ---------- */
+function submitQuiz(){
+  // allow partial answers but confirm if none answered
+  const answeredCount = answers.reduce((s,a)=> s + (a !== null ? 1:0), 0);
+  if(answeredCount === 0 && !confirm('You have not answered any question. Submit anyway?')) return;
+
+  let score = 0;
+  let reviewHtml = '<h3 style="margin-top:0">Answers Review</h3><ol>';
+  quizData.forEach((q,i)=>{
+    const user = answers[i];
+    let correct = false;
+    if(q.type === 'mcq' || q.type === 'fill'){
+      if(user !== null && parseInt(user) === q.correct){ correct = true; score++; }
+    } else if(q.type === 'truefalse'){
+      if(user === q.correct){ correct = true; score++; }
+    }
+    const userText = (user === null) ? '<em>Not answered</em>' : (q.type === 'truefalse' ? (user ? 'True' : 'False') : escapeHtml(String(q.options ? q.options[user] : user)));
+    const correctText = (q.type === 'truefalse') ? (q.correct ? 'True' : 'False') : escapeHtml(String(q.options ? q.options[q.correct] : q.correct));
+    reviewHtml += `<li><strong>${escapeHtml(q.question)}</strong><div class="hint">Your answer: ${userText} — ${correct ? '<span style="color:green">Correct</span>' : '<span style="color:red">Wrong</span>'}</div>`;
+    reviewHtml += `<div style="margin-top:6px;color:#444"><em>Answer:</em> ${correctText} — <small style="color:${correct? 'green':'#a33'}">${escapeHtml(q.explain)}</small></div></li>`;
+  });
+  reviewHtml += '</ol>';
+
+  quizContainer.style.display='none';
+  resultsContainer.style.display='block';
+  document.getElementById('name-display').textContent = student.name;
+  document.getElementById('meta-display').textContent = `Roll ${student.roll} — ${student.class} — Section ${student.section}`;
+  document.getElementById('score-text').textContent = `Score: ${score} / ${quizData.length}`;
+  document.getElementById('answers-review').innerHTML = reviewHtml;
+
+  const total = quizData.length;
+  const pct = Math.round((score/total)*100);
+  document.getElementById('rank-bar').style.width = pct + '%';
+  const badge = document.getElementById('badge');
+  const badgeSub = document.getElementById('badge-sub');
+
+  // Ranks (gold/royal mapping)
+  if(pct >= 90){
+    badge.querySelector('.emoji').textContent = '👑';
+    badge.querySelector('.title').textContent = 'Story King';
+    badgeSub.textContent = 'Your knowledge is secure — brilliant!';
+    playSound('fanfare');
+  } else if(pct >= 80){
+    badge.querySelector('.emoji').textContent = '👸';
+    badge.querySelector('.title').textContent = 'Story Queen';
+    badgeSub.textContent = 'A royal performance — nearly perfect!';
+    playSound('fanfare');
+  } else if(pct >= 60){
+    badge.querySelector('.emoji').textContent = '🛡️';
+    badge.querySelector('.title').textContent = 'Comprehension Knight';
+    badgeSub.textContent = 'Good work — read carefully and try again!';
+    playSound('fanfare');
+  } else if(pct >= 40){
+    badge.querySelector('.emoji').textContent = '🎖️';
+    badge.querySelector('.title').textContent = 'Comprehension Squire';
+    badgeSub.textContent = 'Keep practicing — you are learning well.';
+  } else {
+    badge.querySelector('.emoji').textContent = '🧭';
+    badge.querySelector('.title').textContent = 'Story Peasant';
+    badgeSub.textContent = 'Keep exploring the scrolls — practice helps!';
+  }
+}
+
+/* ---------- RESTART / DOWNLOAD (PDF) ---------- */
+function restartQuiz(){
+  answers = new Array(quizData.length).fill(null);
+  currentIndex = 0;
+  document.getElementById('quiz').innerHTML = '';
+  document.getElementById('student-info-container').style.display = 'block';
+  document.getElementById('results-container').style.display = 'none';
+  quizContainer.style.display = 'none';
+  document.getElementById('student-info-form').reset();
+  stopConfetti();
+}
+
+/* Make a PDF result card with question-by-question review & explanations */
+async function downloadResults(){
+  // use jspdf (loaded via UMD global)
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({unit:'pt', format:'a4'});
+    const margin = 40;
+    let y = margin;
+
+    doc.setFontSize(16);
+    doc.setTextColor(40,30,8);
+    doc.text('The Karate Parrot — Result Card', margin, y);
+    y += 22;
+
+    doc.setFontSize(11);
+    doc.text(`Name: ${student.name}`, margin, y); doc.text(`Roll: ${student.roll}`, 320, y);
+    y += 16;
+    doc.text(`Class: ${student.class}`, margin, y); doc.text(`Section: ${student.section}`, 320, y);
+    y += 20;
+
+    const scoreText = document.getElementById('score-text').textContent;
+    doc.setFontSize(13);
+    doc.text(scoreText, margin, y);
+    y += 18;
+
+    // header line
+    doc.setDrawColor(210,175,60);
+    doc.setLineWidth(1.6);
+    doc.line(margin, y, 560, y);
+    y += 14;
+
+    doc.setFontSize(10);
+
+    // loop questions, add with wrapping
+    const pageHeight = doc.internal.pageSize.height;
+    for(let i=0;i<quizData.length;i++){
+      const q = quizData[i];
+      const user = answers[i];
+      let correct = false;
+      let userText = '';
+      let correctText = '';
+
+      if(q.type === 'truefalse'){
+        userText = user === null ? 'Not answered' : (user ? 'True' : 'False');
+        correctText = q.correct ? 'True' : 'False';
+        correct = (user === q.correct);
+      } else {
+        userText = user === null ? 'Not answered' : q.options[user] ?? String(user);
+        correctText = q.options[q.correct] ?? String(q.correct);
+        correct = (user !== null && parseInt(user) === q.correct);
+      }
+
+      // question
+      const qTitle = `${i+1}. ${q.question}`;
+      const splitQ = doc.splitTextToSize(qTitle, 520 - margin);
+      if(y + (splitQ.length * 12) > pageHeight - 60){ doc.addPage(); y = margin; }
+      doc.setFont(undefined, 'bold');
+      doc.text(splitQ, margin, y);
+      y += splitQ.length * 12;
+      doc.setFont(undefined, 'normal');
+
+      const ansLine = `Your answer: ${userText}   |   Correct: ${correctText}`;
+      const splitAns = doc.splitTextToSize(ansLine, 520 - margin);
+      if(y + (splitAns.length * 11) > pageHeight - 60){ doc.addPage(); y = margin; }
+      doc.text(splitAns, margin+6, y);
+      y += splitAns.length * 11;
+
+      // explanation (short)
+      const expl = `Explanation: ${q.explain}`;
+      const splitExpl = doc.splitTextToSize(expl, 520 - margin);
+      if(y + (splitExpl.length * 11) > pageHeight - 60){ doc.addPage(); y = margin; }
+      // color: green if correct else red
+      if(correct) doc.setTextColor(12, 100, 52); else doc.setTextColor(160, 40, 40);
+      doc.text(splitExpl, margin+6, y);
+      y += splitExpl.length * 11 + 8;
+      doc.setTextColor(40,30,8);
+
+      // small separator
+      doc.setDrawColor(230,220,200);
+      doc.setLineWidth(0.6);
+      doc.line(margin, y, 560, y);
+      y += 10;
+    }
+
+    // footer
+    const fileName = `${student.name.replace(/\s+/g,'_')}_KarateParrot_Result.pdf`;
+    doc.save(fileName);
+  } catch (err){
+    alert('Could not generate PDF. Please make sure you are online and try again.');
+    console.error(err);
+  }
+}
+
+/* util */
+function escapeHtml(t){ return String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ---------- CONFETTI (nice touch when high score) ---------- */
+let confettiTimer = null;
+let confettiCtx = null;
+let confettiPieces = [];
+function initConfetti(){
+  const canvas = document.createElement('canvas');
+  canvas.id = 'confetti-canvas';
+  canvas.style.position='fixed';
+  canvas.style.left = 0;
+  canvas.style.top = 0;
+  canvas.style.pointerEvents='none';
+  canvas.style.zIndex='9999';
+  document.body.appendChild(canvas);
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  confettiCtx = canvas.getContext('2d');
+  window.addEventListener('resize', ()=> { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+}
+function startConfetti(){
+  // start only if not started
+  if(!confettiCtx) initConfetti();
+  const canvas = document.getElementById('confetti-canvas');
+  confettiPieces = [];
+  const count = 90;
+  for(let i=0;i<count;i++){
+    confettiPieces.push({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height - canvas.height,
+      w: Math.random()*12+6,
+      h: Math.random()*6+3,
+      color: ['#f4e1c6','#d7b36a','#ffd29a','#ffecd1'][Math.floor(Math.random()*4)],
+      rot: Math.random()*360,
+      speed: Math.random()*1.6+0.6,
+      tilt: Math.random()*0.7-0.35
+    });
+  }
+  confettiTimer = requestAnimationFrame(drawConfetti);
+}
+function drawConfetti(){
+  const canvas = document.getElementById('confetti-canvas');
+  confettiCtx.clearRect(0,0,canvas.width,canvas.height);
+  confettiPieces.forEach(p=>{
+    p.y += p.speed;
+    p.x += Math.sin(p.y * 0.01) * 0.8;
+    p.rot += 1.6;
+    confettiCtx.save();
+    confettiCtx.translate(p.x, p.y);
+    confettiCtx.rotate(p.rot * Math.PI / 180);
+    confettiCtx.fillStyle = p.color;
+    confettiCtx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+    confettiCtx.restore();
+    if(p.y > canvas.height+20){ p.y = -10; p.x = Math.random()*canvas.width; }
+  });
+  confettiTimer = requestAnimationFrame(drawConfetti);
+}
+function stopConfetti(){ if(confettiTimer) cancelAnimationFrame(confettiTimer); confettiTimer = null; const c = document.getElementById('confetti-canvas'); if(c && confettiCtx) confettiCtx.clearRect(0,0,c.width,c.height); }
+
+/* ---------- Expose functions globally ---------- */
+window.startQuiz = startQuiz;
+window.prevQuestion = prevQuestion;
+window.nextQuestion = nextQuestion;
+window.restartQuiz = restartQuiz;
+window.downloadResults = downloadResults;
+
+/* Initialize nothing until user clicks Start (keeps it simple) */
+</script>
+</body>
+</html>
